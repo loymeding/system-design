@@ -8,6 +8,6 @@
 5. Проставить технологии на контейнерах и связях.
 6. Создать диаграмму dynamic для ключевого варианта использования.
 
-[](https://github.com/loymeding/system-design/blob/main/lab1/structurizr/img1.png)
+![](https://github.com/loymeding/system-design/blob/main/lab1/structurizr/img1.png)
 
-[](https://github.com/loymeding/system-design/blob/main/lab1/structurizr/img2.png)
+![](https://github.com/loymeding/system-design/blob/main/lab1/structurizr/img2.png)
