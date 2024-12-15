@@ -1,18 +1,23 @@
 workspace {
     model {
-        user = Person "Пользователь" "Оформляет заявки на услуги и отслеживает их статус"
-        contractor = Person "Исполнитель" "Получает и выполняет заявки пользователей"
-        system = SoftwareSystem "Сайт заказа услуг" "Позволяет пользователям создавать заявки и исполнителям их принимать" {
-            frontend = Container "Frontend" "Пользовательский интерфейс" "React.js"
-            backend = Container "Backend" "Бизнес-логика и API" "Node.js"
-            database = Container "Database" "Хранение данных" "PostgreSQL"
+        user = person "Пользователь" "Человек, который заказывает услуги через систему."
+        service_provider = person "Исполнитель" "Человек, который предоставляет услуги."
 
-            user -> frontend "Работает с интерфейсом"
-            contractor -> frontend "Работает с интерфейсом"
-            frontend -> backend "Отправляет запросы"
-            backend -> database "Читает и записывает данные"
-            backend -> frontend "Возвращает ответы"
+        system = softwareSystem "Сайт заказа услуг" "Онлайн-платформа для поиска и заказа услуг." {
+            webapp = container "Веб-приложение" "Позволяет пользователям искать и заказывать услуги." "Python (Flask/Django)"
+            backend = container "Серверная часть" "Обрабатывает запросы, управляет логикой." "Python (FastAPI)"
+            database = container "База данных" "Хранит данные о пользователях, услугах и заказах." "PostgreSQL"
         }
+
+        user -> system "Ищет и заказывает услуги"
+        service_provider -> system "Добавляет услуги и управляет заказами"
+
+        user -> webapp "Взаимодействует через интерфейс"
+        service_provider -> webapp "Управляет своими услугами"
+        webapp -> backend "Передает запросы"
+        backend -> database "Читает и записывает данные"
+        database -> backend "Возвращает данные"
+        backend -> webapp "Отправляет результаты запросов"
     }
 
     views {
@@ -26,12 +31,13 @@ workspace {
             autolayout lr
         }
 
-        dynamic system {
-            title "Создание заказа"
-            user -> frontend "Создает заявку"
-            frontend -> backend "Отправляет данные заявки"
-            backend -> database "Сохраняет данные заявки"
-            backend -> frontend "Подтверждает сохранение"
+        dynamic system "poisk_uslugi" { 
+            user -> webapp "Вводит параметры поиска"
+            webapp -> backend "Передает запрос на поиск"
+            backend -> database "Запрашивает данные"
+            database -> backend "Возвращает результаты поиска"
+            backend -> webapp "Передает результаты поиска"
+            webapp -> user "Отображает список услуг"
         }
     }
 }
