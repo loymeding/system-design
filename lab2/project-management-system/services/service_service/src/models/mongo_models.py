@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
-from ..models.database_models import ServiceStatus, ServicePriority
+
 
 class MongoService(BaseModel):
     """
