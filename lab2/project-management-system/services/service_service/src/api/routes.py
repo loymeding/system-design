@@ -24,10 +24,7 @@ from ..models.api_models import (
     ServiceUpdate,
     ServiceResponse,
 )
-from ..models.mongo_models import (
-    ServiceStatus,
-    ServicePriority,
-)
+
 from ..services.command_service import ServiceCommandService
 from ..services.query_service import ServiceQueryService
 from ..services.service_service import ServiceService

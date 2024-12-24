@@ -94,7 +94,7 @@ CREATE TABLE services (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(200) NOT NULL,
     description TEXT,
-    cost NOT NULL DEFAULT 10000,
+    cost UUID NOT NULL DEFAULT 10000,
     order_id UUID NOT NULL,
     creator_id UUID NOT NULL,
     assignee_id UUID,

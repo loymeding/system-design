@@ -3,7 +3,6 @@ from typing import Optional
 from uuid import UUID, uuid4
 from datetime import datetime
 from pydantic import BaseModel, Field
-from .database_models import ServiceStatus, ServicePriority
 
 class ServiceBase(BaseModel):
     """
@@ -76,8 +75,7 @@ class ServiceUpdate(BaseModel):
     """
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=2000)
-    cost: Optional[ServiceStatus] = None
-    priority: Optional[ServicePriority] = None
+    cost: Optional[float] = None
     assignee_id: Optional[UUID] = None
 
 class ServiceResponse(Service):

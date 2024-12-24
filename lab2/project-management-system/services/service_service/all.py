@@ -485,7 +485,6 @@ from typing import Optional
 from uuid import UUID, uuid4
 from datetime import datetime
 from pydantic import BaseModel, Field
-from .database_models import ServiceStatus, ServicePriority
 
 class ServiceBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
@@ -547,16 +546,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-class ServiceStatus(str, enum.Enum):
-    CREATED     = "created"
-    IN_PROGRESS = "in_progress"
-    ON_REVIEW   = "on_review"
-    COMPLETED   = "completed"
-
-class ServicePriority(str, enum.Enum):
-    LOW    = "low"
-    MEDIUM = "medium"
-    HIGH   = "high"
 
 class Service(Base):
     
@@ -582,7 +571,7 @@ from datetime import datetime
 from typing import Optional, List, Dict
 from uuid import UUID, uuid4
 from pydantic import BaseModel, Field
-from ..models.database_models import ServiceStatus, ServicePriority
+
 
 class MongoService(BaseModel):
 
@@ -742,7 +731,6 @@ from ..services.command_service import ServiceCommandService
 from ..services.query_service import ServiceQueryService
 from ..services.service_service import ServiceService
 from ..models.api_models import ServiceCreate, ServiceUpdate, ServiceResponse
-from ..models.mongo_models import ServiceStatus, ServicePriority
 from ..auth import get_current_user, User
 from ..database import MongoDBManager
 
