@@ -218,36 +218,3 @@ async def delete_order(order_id: UUID, current_user: User = Depends(get_current_
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error deleting order"
         )
-
-@router.get("/orders/search", response_model=List[OrderResponse])
-async def search_orders(name: str, current_user: User = Depends(get_current_user)) -> List[OrderResponse]:
-    """
-    Description:
-        Поиск проектов по имени.
-
-    Args:
-        name (str): Имя для поиска проектов.
-        current_user (User): Аутентифицированный пользователь.
-
-    Returns:
-        List[orderResponse]: Список найденных проектов.
-
-    Raises:
-        HTTPException: При ошибках поиска проектов.
-    """
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
-        )
-
-    try:
-        orders = db.get_multi(OrderDB)
-        user_orders = [p for p in orders if p.owner_id == current_user.id]
-        return [p for p in user_orders if name.lower() in p.name.lower()]
-    except Exception as e:
-        print(f"Error searching orders: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error searching orders"
-        )

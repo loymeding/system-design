@@ -20,7 +20,7 @@ class ServiceService:
     def __init__(self, db_manager):
         """
         Description:
-            Инициализация serviceService с менеджером базы данных.
+            Инициализация ServiceService с менеджером базы данных.
 
         Args:
             db_manager: Менеджер для взаимодействия с базой данных.
@@ -46,7 +46,7 @@ class ServiceService:
             >>> await create_service(service_data, UUID("123e4567-e89b-12d3-a456-426614174000"))
         """
         try:
-            logger.info("Начало создания задачи в serviceService")
+            logger.info("Начало создания задачи в ServiceService")
             logger.debug(f"Данные задачи: {service_data.model_dump_json(indent=2)}")
             logger.debug(f"ID создателя: {creator_id}")
 
@@ -122,27 +122,6 @@ class ServiceService:
             logger.error(f"Ошибка удаления задачи: {str(e)}")
             raise
 
-    async def get_order_services(self, order_id: UUID) -> List[MongoService]:
-        """
-        Description:
-            Получает список задач проекта.
-
-        Args:
-            order_id: Идентификатор проекта.
-
-        Returns:
-            Список задач проекта.
-
-        Examples:
-            >>> await get_order_services(UUID("123e4567-e89b-12d3-a456-426614174000"))
-        """
-        try:
-            services = await self.db.get_services_by_order(order_id)
-            logger.info(f"Найдено {len(services)} задач для проекта {order_id}.")
-            return services
-        except Exception as e:
-            logger.error(f"Ошибка получения задач проекта: {str(e)}")
-            raise
 
     async def get_services_by_criteria(self, criteria: Dict[str, Any]) -> List[MongoService]:
         """

@@ -193,7 +193,7 @@ cleanup_test_data() {
     fi
     
     # Очистка Kafka
-    if [ ! -z "$KAFKA_service_TOPIC" ]; then
+    if [ ! -z "$KAFKA_SERVICE_TOPIC" ]; then
         docker exec kafka /usr/bin/kafka-topics \
             --bootstrap-server kafka:9092 \
             --delete --topic "$KAFKA_service_TOPIC" \
@@ -218,7 +218,12 @@ check_services_health() {
         print_success "$name Service is available"
     done
     
-
+    # Проверка Kafka
+    print_step "Checking Kafka health"
+    if ! check_kafka_connection; then
+        handle_error 1 "Cannot connect to Kafka"
+    fi
+    print_success "Kafka connection successful"
     
     # Создание/проверка топиков
     if ! ensure_kafka_topic; then
@@ -290,16 +295,16 @@ print_success "Authentication successful"
 # Тестирование order Service
 print_step "Testing order Service"
 
-order_RESPONSE=$(curl -s -X POST \
+ORDER_RESPONSE=$(curl -s -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $TOKEN" \
     -d "{
         \"name\": \"Test order $(date +%s)\",
         \"description\": \"Test order description\"
     }" \
-    ${order_SERVICE_URL}/orders)
+    ${ORDER_SERVICE_URL}/orders)
 
-order_ID=$(echo $order_RESPONSE | grep -o '"id":"[^"]*' | sed 's/"id":"//')
+ORDER_ID=$(echo $ORDER_RESPONSE | grep -o '"id":"[^"]*' | sed 's/"id":"//')
 if [ -z "$order_ID" ]; then
     handle_error 1 "Failed to create order"
 fi

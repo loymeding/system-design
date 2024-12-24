@@ -35,10 +35,7 @@ BEGIN
     DROP TABLE IF EXISTS orders CASCADE;
     DROP TABLE IF EXISTS users CASCADE;
     DROP TABLE IF EXISTS deletion_log CASCADE;
-    
-    -- Удаляем типы если они существуют
-    DROP TYPE IF EXISTS service_status CASCADE;
-    DROP TYPE IF EXISTS service_priority CASCADE;
+
     
     RAISE NOTICE 'All existing objects dropped successfully';
 EXCEPTION
@@ -46,23 +43,6 @@ EXCEPTION
         RAISE NOTICE 'Error during cleanup: %', SQLERRM;
 END $$;
 
--- Создаем типы для статуса и приоритета задач
-SELECT log_message('Creating ENUM types...');
-
-CREATE TYPE service_status AS ENUM (
-    'CREATED',
-    'IN_PROGRESS',
-    'REVIEW',
-    'COMPLETED',
-    'CANCELLED'
-);
-
-CREATE TYPE service_priority AS ENUM (
-    'LOW',
-    'MEDIUM',
-    'HIGH',
-    'URGENT'
-);
 
 -- Создаем таблицу для логирования удалений
 SELECT log_message('Creating deletion_log table...');
@@ -114,8 +94,7 @@ CREATE TABLE services (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(200) NOT NULL,
     description TEXT,
-    status service_status NOT NULL DEFAULT 'CREATED',
-    priority service_priority NOT NULL DEFAULT 'MEDIUM',
+    cost NOT NULL DEFAULT 10000,
     order_id UUID NOT NULL,
     creator_id UUID NOT NULL,
     assignee_id UUID,
@@ -151,8 +130,7 @@ CREATE INDEX idx_orders_deleted_at ON orders(deleted_at) WHERE deleted_at IS NOT
 
 -- Индексы для services
 CREATE INDEX idx_services_title ON services(title) WHERE deleted_at IS NULL;
-CREATE INDEX idx_services_status ON services(status) WHERE deleted_at IS NULL;
-CREATE INDEX idx_services_priority ON services(priority) WHERE deleted_at IS NULL;
+CREATE INDEX idx_services_cost ON services(cost) WHERE deleted_at IS NULL;
 CREATE INDEX idx_services_order ON services(order_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_services_creator ON services(creator_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_services_assignee ON services(assignee_id) WHERE deleted_at IS NULL;
@@ -210,7 +188,7 @@ BEGIN
             record_info := jsonb_build_object(
                 'title', OLD.title,
                 'order_id', OLD.order_id,
-                'status', OLD.status,
+                'cost', OLD.cost,
                 'priority', OLD.priority
             );
         ELSE

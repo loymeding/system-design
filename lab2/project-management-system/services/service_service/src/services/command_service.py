@@ -51,7 +51,7 @@ class ServiceCommandService:
 
         Examples:
             >>> service = await service.create_service(
-            ...     serviceCreate(title="New service"),
+            ...     ServiceCreate(title="New service"),
             ...     UUID("123...")
             ... )
         """

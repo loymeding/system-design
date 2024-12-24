@@ -78,16 +78,7 @@ response = requests.post(
 order = response.json()
 ```
 
-### Поиск проектов
-```python
-# Поиск проектов по имени
-response = requests.get(
-    "http://localhost:8001/orders/search",
-    headers={"Authorization": f"Bearer {token}"},
-    params={"name": "order"}
-)
-orders = response.json()
-```
+
 
 ### Обновление проекта
 ```python

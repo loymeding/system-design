@@ -470,14 +470,6 @@ class ServiceService:
             logger.error(f"Ошибка удаления задачи: {str(e)}")
             raise
 
-    async def get_order_services(self, order_id: UUID) -> List[MongoService]:
-        try:
-            services = await self.db.get_services_by_order(order_id)
-            logger.info(f"Найдено {len(services)} задач для проекта {order_id}.")
-            return services
-        except Exception as e:
-            logger.error(f"Ошибка получения задач проекта: {str(e)}")
-            raise
 
     async def get_services_by_criteria(self, criteria: Dict[str, Any]) -> List[MongoService]:
         try:
@@ -509,7 +501,7 @@ class ServiceCreate(ServiceBase):
 
 class Service(ServiceBase):
     id: UUID = Field(default_factory=uuid4)
-    status: ServiceStatus = Field(default=ServiceStatus.CREATED)
+    cost: UUID
     order_id: UUID
     creator_id: UUID
     assignee_id: Optional[UUID]
@@ -522,7 +514,7 @@ class Service(ServiceBase):
 class ServiceUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=2000)
-    status: Optional[ServiceStatus] = None
+    cost: Optional[UUID] = None
     priority: Optional[ServicePriority] = None
     assignee_id: Optional[UUID] = None
 
@@ -534,9 +526,8 @@ class ServiceResponse(Service):
             id          = mongo_service.id,
             title       = mongo_service.title,
             description = mongo_service.description,
-            status      = mongo_service.status,
-            priority    = mongo_service.priority,
-            order_id  = mongo_service.order_id,
+            cost        = mongo_service.cost,
+            order_id    = mongo_service.order_id,
             creator_id  = mongo_service.creator_id,
             assignee_id = mongo_service.assignee_id,
             created_at  = mongo_service.created_at,
@@ -574,8 +565,7 @@ class Service(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(200), nullable=False)
     description = Column(Text)
-    status = Column(SQLAlchemyEnum(ServiceStatus), default=ServiceStatus.CREATED, nullable=False)
-    priority = Column(SQLAlchemyEnum(ServicePriority), default=ServicePriority.MEDIUM, nullable=False)
+    cost = Column(UUID(as_uuid=True), nullable=False)
     
     order_id = Column(UUID(as_uuid=True), nullable=False)
     creator_id = Column(UUID(as_uuid=True), nullable=False)
@@ -599,8 +589,7 @@ class MongoService(BaseModel):
     id: UUID = Field(default_factory=uuid4, alias="_id", description="Уникальный идентификатор задачи")
     title: str = Field(..., min_length=1, max_length=200, description="Название задачи (от 1 до 200 символов)")
     description: str = Field(..., max_length=2000, description="Описание задачи (до 2000 символов)")
-    status: ServiceStatus = Field(default=ServiceStatus.CREATED, description="Статус задачи")
-    priority: ServicePriority = Field(default=ServicePriority.MEDIUM, description="Приоритет задачи")
+    cost: UUID = Field(..., description="Стоимость услуги")
     order_id: UUID = Field(..., description="ID проекта, связанного с задачей")
     creator_id: UUID = Field(..., description="ID создателя задачи")
     assignee_id: Optional[UUID] = Field(None, description="ID исполнителя задачи")
@@ -857,8 +846,7 @@ async def create_service(
 async def get_services(
     order_id: Optional[UUID] = None,
     assignee_id: Optional[UUID] = None,
-    status: Optional[ServiceStatus] = None,
-    priority: Optional[ServicePriority] = None,
+    cost: Optional[UUID] = None,
     current_user: User = Depends(get_current_user),
     query_service: ServiceQueryService = Depends(get_service_query_service)
 ) -> List[ServiceResponse]:
@@ -867,8 +855,7 @@ async def get_services(
             k: v for k, v in {
                 "order_id": order_id,
                 "assignee_id": assignee_id,
-                "status": status,
-                "priority": priority
+                "cost": cost
             }.items() if v is not None
         }
         services = await query_service.get_services_by_criteria(criteria)
@@ -985,48 +972,6 @@ async def delete_service(
             detail=f"Error deleting service: {str(e)}"
         )
 
-@router.patch("/{service_id}/status", response_model=ServiceResponse)
-async def update_service_status(
-    service_id: UUID,
-    status: ServiceStatus,
-    current_user: User = Depends(get_current_user),
-    service_service: ServiceService = Depends(get_service_service)
-) -> ServiceResponse:
-    try:
-        # Проверяем существование задачи
-        existing_service = await service_service.get_service(service_id)
-        if existing_service is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"service {service_id} not found"
-            )
-
-        # Проверяем права доступа
-        if (existing_service.creator_id != current_user.id and 
-            existing_service.assignee_id != current_user.id):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to update this service status"
-            )
-
-        logger.info(f"Updating status of service {service_id} to {status} by user {current_user.id}")
-        service_update = ServiceUpdate(status=status)
-        updated_service = await service_service.update_service(service_id, service_update)
-        if updated_service is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update service status"
-            )
-        logger.info(f"service {service_id} status updated successfully")
-        return ServiceResponse.from_mongo(updated_service)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error updating service status {service_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating service status: {str(e)}"
-        )
 
 @router.patch("/{service_id}/assignee", response_model=ServiceResponse)
 async def update_service_assignee(

@@ -23,12 +23,9 @@ db.createCollection('services');
 db.services.createIndex({ "order_id": 1 });
 db.services.createIndex({ "creator_id": 1 });
 db.services.createIndex({ "assignee_id": 1 });
-db.services.createIndex({ "status": 1 });
-db.services.createIndex({ "priority": 1 });
+db.services.createIndex({ "cost": 1 });
 db.services.createIndex({
-  "order_id": 1,
-  "status": 1, 
-  "priority": -1 
+  "order_id": 1
 });
 db.services.createIndex({ "created_at": -1 });
 db.services.createIndex({ "tags": 1 });

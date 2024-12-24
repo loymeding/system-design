@@ -8,24 +8,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
-class ServiceStatus(str, enum.Enum):
-    """
-    Description:
-        Enum, представляющий возможные статусы задачи.
-    """
-    CREATED     = "created"
-    IN_PROGRESS = "in_progress"
-    ON_REVIEW   = "on_review"
-    COMPLETED   = "completed"
-
-class ServicePriority(str, enum.Enum):
-    """
-    Description:
-        Enum, представляющий приоритеты задачи.
-    """
-    LOW    = "low"
-    MEDIUM = "medium"
-    HIGH   = "high"
 
 class Service(Base):
     """
@@ -50,9 +32,8 @@ class Service(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String(200), nullable=False)
     description = Column(Text)
-    status = Column(SQLAlchemyEnum(ServiceStatus), default=ServiceStatus.CREATED, nullable=False)
-    priority = Column(SQLAlchemyEnum(ServicePriority), default=ServicePriority.MEDIUM, nullable=False)
-    
+
+    cost = Column(UUID(as_uuid=True), nullable=False)
     order_id = Column(UUID(as_uuid=True), nullable=False)
     creator_id = Column(UUID(as_uuid=True), nullable=False)
     assignee_id = Column(UUID(as_uuid=True), nullable=True)

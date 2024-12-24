@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .api import routes
 from .database import db
 
-app = FastAPI(title="order Service", description="API для управления проектами")
+app = FastAPI(title="Order Service", description="API для управления проектами")
 
 # Настройка CORS
 app.add_middleware(
@@ -25,11 +25,11 @@ async def startup_event():
       Функция, выполняемая при запуске приложения.
       Здесь можно добавить инициализацию, если необходимо.
     """
-    print("order Service started")
+    print("Order Service started")
     try:
         # Инициализируем подключение к БД
         db.connect()
-        print("order Service started - Database connected successfully")
+        print("Order Service started - Database connected successfully")
     except Exception as e:
         print(f"Error connecting to database: {str(e)}")
         raise

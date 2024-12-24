@@ -52,8 +52,8 @@ class Service(ServiceBase):
         rom_attributes (bool): Разрешает работу с объектами ORM для Pydantic.
     """
     id: UUID = Field(default_factory=uuid4)
-    status: ServiceStatus = Field(default=ServiceStatus.CREATED)
     order_id: UUID
+    cost: UUID
     creator_id: UUID
     assignee_id: Optional[UUID]
     created_at: Optional[datetime] = None
@@ -76,7 +76,7 @@ class ServiceUpdate(BaseModel):
     """
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=2000)
-    status: Optional[ServiceStatus] = None
+    cost: Optional[ServiceStatus] = None
     priority: Optional[ServicePriority] = None
     assignee_id: Optional[UUID] = None
 
@@ -98,16 +98,15 @@ class ServiceResponse(Service):
             Экземпляр serviceResponse.
 
         Examples:
-            >>> mongo_service = Mongoservice(...)
-            >>> service_response = serviceResponse.from_mongo(mongo_service)
+            >>> mongo_service = MongoService(...)
+            >>> service_response = ServiceResponse.from_mongo(mongo_service)
         """
         return cls(
             id          = mongo_service.id,
             title       = mongo_service.title,
             description = mongo_service.description,
-            status      = mongo_service.status,
-            priority    = mongo_service.priority,
-            order_id  = mongo_service.order_id,
+            cost        = mongo_service.cost,
+            order_id    = mongo_service.order_id,
             creator_id  = mongo_service.creator_id,
             assignee_id = mongo_service.assignee_id,
             created_at  = mongo_service.created_at,

@@ -195,8 +195,7 @@ async def create_service(
 async def get_services(
     order_id: Optional[UUID] = None,
     assignee_id: Optional[UUID] = None,
-    status: Optional[ServiceStatus] = None,
-    priority: Optional[ServicePriority] = None,
+    cost: Optional[UUID] = None,
     current_user: User = Depends(get_current_user),
     query_service: ServiceQueryService = Depends(get_service_query_service)
 ) -> List[ServiceResponse]:
@@ -229,8 +228,7 @@ async def get_services(
             k: v for k, v in {
                 "order_id": order_id,
                 "assignee_id": assignee_id,
-                "status": status,
-                "priority": priority
+                "cost": cost
             }.items() if v is not None
         }
         services = await query_service.get_services_by_criteria(criteria)
@@ -389,64 +387,6 @@ async def delete_service(
             detail=f"Error deleting service: {str(e)}"
         )
 
-@router.patch("/{service_id}/status", response_model=ServiceResponse)
-async def update_service_status(
-    service_id: UUID,
-    status: ServiceStatus,
-    current_user: User = Depends(get_current_user),
-    service_service: ServiceService = Depends(get_service_service)
-) -> ServiceResponse:
-    """
-    Description:
-        Обновление статуса задачи.
-
-    Args:
-        service_id (UUID): ID задачи
-        status (serviceStatus): Новый статус
-        current_user (User): Текущий пользователь
-        service_service (serviceService): Сервис для работы с задачами
-
-    Returns:
-        serviceResponse: Обновленная задача
-
-    Raises:
-        HTTPException: При ошибке обновления статуса
-    """
-    try:
-        # Проверяем существование задачи
-        existing_service = await service_service.get_service(service_id)
-        if existing_service is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"service {service_id} not found"
-            )
-
-        # Проверяем права доступа
-        if (existing_service.creator_id != current_user.id and 
-            existing_service.assignee_id != current_user.id):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to update this service status"
-            )
-
-        logger.info(f"Updating status of service {service_id} to {status} by user {current_user.id}")
-        service_update = ServiceUpdate(status=status)
-        updated_service = await service_service.update_service(service_id, service_update)
-        if updated_service is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update service status"
-            )
-        logger.info(f"service {service_id} status updated successfully")
-        return ServiceResponse.from_mongo(updated_service)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error updating service status {service_id}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating service status: {str(e)}"
-        )
 
 @router.patch("/{service_id}/assignee", response_model=ServiceResponse)
 async def update_service_assignee(

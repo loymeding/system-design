@@ -22,7 +22,7 @@ class ServiceQueryService:
         db_manager: Менеджер базы данных MongoDB
 
     Examples:
-        >>> service = serviceQueryService(db_manager)
+        >>> service = ServiceQueryService(db_manager)
         >>> service = await service.get_service(service_id)
     """
 

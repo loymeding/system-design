@@ -350,24 +350,6 @@ class PostgresManager:
         except SQLAlchemyError as e:
             self._handle_db_error("get_services_by_assignee", e)
 
-    def update_service_status(
-        self, 
-        model: Type[ModelType],
-        service_id: UUID, 
-        status: str
-    ) -> Optional[ModelType]:
-        """
-        Обновляет статус задачи.
-
-        Args:
-            model: Модель SQLAlchemy.
-            service_id: Идентификатор задачи.
-            status: Новый статус задачи.
-
-        Returns:
-            Обновленный объект задачи, если он найден, иначе None.
-        """
-        return self.update(model, service_id, {"status": status})
 
 # Создание экземпляра менеджера
 db_manager = PostgresManager(
