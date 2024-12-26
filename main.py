@@ -11,7 +11,6 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from pymongo import MongoClient
 
-
 # Импорт Producer
 from confluent_kafka import Producer
 
@@ -66,7 +65,29 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
 
 
-@app.post("/users", response_model=UserMongo)
+# Поиск пользователя по логину
+@app.get("/users/{username}", response_model=UserMongo)
+def get_user_by_username(username: str, current_user: str = Depends(get_current_client)):
+    user = mongo_users_collection.find_one({"username": username})
+    if user:
+        user["id"] = str(user["_id"])
+        return user
+    raise HTTPException(status_code=404, detail="User not found")
+
+
+# Поиск пользователя по маске имени и фамилии
+@app.get("/users", response_model=List[UserMongo])
+def search_users_by_name(
+        first_name: str, last_name: str, current_user: str = Depends(get_current_client)
+):
+    users = list(mongo_users_collection.find(
+        {"first_name": {"$regex": first_name, "$options": "i"}, "last_name": {"$regex": last_name, "$options": "i"}}))
+    for user in users:
+        user["id"] = str(user["_id"])
+    return users
+
+
+@app.post("/create_user", response_model=UserMongo)
 def create_user(user: UserMongo, current_user: str = Depends(get_current_client)):
     user_dict = user.dict()
     user_dict["hashed_password"] = pwd_context.hash(user_dict["hashed_password"])
@@ -75,7 +96,7 @@ def create_user(user: UserMongo, current_user: str = Depends(get_current_client)
     return user_dict
 
 
-@app.post("/services", response_model=Service)
+@app.post("/create_service", response_model=Service)
 def create_service(service: Service, producer: Producer = Depends(get_kafka_producer),
                    current_user: str = Depends(get_current_client)):
     producer.produce(KAFKA_TOPIC, key=str(service.user_id), value=json.dumps(service.dict()).encode("utf-8"))
@@ -83,7 +104,7 @@ def create_service(service: Service, producer: Producer = Depends(get_kafka_prod
     return service
 
 
-@app.post("/orders/{user_id}", response_model=Order)
+@app.post("/add_to_order/{user_id}", response_model=Order)
 def add_services_to_order(user_id: int, service_ids: List[int], db: Session = Depends(get_db)):
     # Проверка наличия услуг в базе
     services = db.query(ServiceDB).filter(ServiceDB.id.in_(service_ids)).all()
@@ -114,6 +135,20 @@ def get_user_orders(user_id: int, db: Session = Depends(get_db)):
             date=order.date
         )
         for order in orders
+    ]
+
+
+@app.get("/services", response_model=List[Service])
+def get_services(db: Session = Depends(get_db)):
+    services = db.query(ServiceDB).all()
+    return [
+        Service(
+            id=service.id,
+            user_id=service.user_id,
+            description=service.description,
+            cost=service.cost,
+        )
+        for service in services
     ]
 
 
