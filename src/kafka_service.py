@@ -1,8 +1,8 @@
 import redis
 import json
-from models import ServiceDB
-from dependencies import SessionLocal
-from config import KAFKA_BOOTSTRAP_SERVERS, KAFKA_TOPIC
+from src.models import ServiceDB
+from src.dependencies import SessionLocal
+from src.config import KAFKA_BOOTSTRAP_SERVERS, KAFKA_TOPIC
 from confluent_kafka import Producer, Consumer, KafkaError
 
 # Настройка Redis

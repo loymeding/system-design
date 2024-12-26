@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from config import SECRET_KEY, ALGORITHM, SQLALCHEMY_DATABASE_URL
+from src.config import SECRET_KEY, ALGORITHM, SQLALCHEMY_DATABASE_URL
 
 # Настройка SQLAlchemy
 engine = create_engine(SQLALCHEMY_DATABASE_URL)

@@ -1,18 +1,9 @@
 import datetime
 import time
-import os
-import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, ServiceDB, OrderDB
 
-# Получаем текущую директорию
-current_dir = os.getcwd()
-
-# Определяем директорию на один уровень выше
-parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir))
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
 
 # Настройка PostgreSQL
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:archdb@db/carpooling"

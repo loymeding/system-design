@@ -1,3 +1,7 @@
+import threading
+import json
+import os
+import sys
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List, Optional
@@ -6,17 +10,18 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from pymongo import MongoClient
-import threading
-import json
+
 
 # Импорт Producer
 from confluent_kafka import Producer
 
 # Импорт модулей
-from kafka_service import get_kafka_producer, kafka_consumer_service
-from models import UserMongo, Service, Order, ServiceDB, OrderDB
-from dependencies import get_db, get_current_client, SessionLocal
-from config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, MONGO_URI, KAFKA_TOPIC
+from src.kafka_service import get_kafka_producer, kafka_consumer_service
+from src.models import UserMongo, Service, Order, ServiceDB, OrderDB
+from src.dependencies import get_db, get_current_client, SessionLocal
+from src.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, MONGO_URI, KAFKA_TOPIC
+
+sys.path.append(os.getcwd())
 
 # Инициализация FastAPI
 app = FastAPI()
